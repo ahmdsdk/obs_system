@@ -1,0 +1,44 @@
+POST http://192.168.1.30:5555/api/create_admin
+Content-Type: application/json; charset=utf-8
+Accept: application/json;
+
+{
+    "authType": "admin",
+    "username": "admin",
+    "email": "admin@obs.com",
+    "password": "aaaaaaaa",
+    "passwordAgain": "aaaaaaaa"
+}
+###
+
+POST http://192.168.1.30:5555/api/login
+Content-Type: application/json; charset=utf-8
+Accept: application/json;
+
+{
+    "authType": "admin",
+    "username": "admin",
+    "password": "aaaaaaaa"
+}
+###
+
+GET http://192.168.1.30:5555/api/teachers
+Content-Type: application/json; charset=utf-8
+Accept: application/json;
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG9icy5jb20iLCJ1c2VybmFtZSI6ImFkbWluIiwiX2lkIjoiNjMyNjQyZDkyYmYyODhjODE0MDM3MWRkIiwiaWF0IjoxNjYzNDUxODY1LCJleHAiOjE2NjM0NTI3NjV9.MDSlY1g4bNtsmH5YJiBw_oqJ3SEecjP33zJyWjDHino
+
+###
+
+POST http://192.168.1.30:5555/api/add_teacher
+Content-Type: application/json; charset=utf-8
+Accept: application/json;
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG9icy5jb20iLCJ1c2VybmFtZSI6ImFkbWluIiwiX2lkIjoiNjMyNjQyZDkyYmYyODhjODE0MDM3MWRkIiwiaWF0IjoxNjYzNDU4MDY5LCJleHAiOjE2NjM0NTg5Njl9.UI04aefMxAdy12GnDhd5TrLEQWvnRG05Oe2Iw8VYO9Y
+
+{
+    "username": "221104001",
+    "email": "teacher@email.com",
+    "password": "aaaaaaaa",
+    "passwordAgain": "aaaaaaaa",
+    "fullName": "Ahmad Sadek",
+    "identityNum": 99418533316
+}
