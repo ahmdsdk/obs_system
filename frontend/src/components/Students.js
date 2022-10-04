@@ -63,7 +63,7 @@ const Students = ({ userData, setUserData, token, setToken, allStudents, setAllS
     const [passwordError, setPasswordError] = useState("false");
 
     useEffect(() => {
-        if (userData.role !== 'admin') {
+        if (userData.role !== 'admin' && userData.role !== 'teacher') {
             return navigate('/dashboard');
         }
         setData(allStudents);
@@ -151,18 +151,18 @@ const Students = ({ userData, setUserData, token, setToken, allStudents, setAllS
         }
     }
 
-    const showTeachers = (
+    const showStudents = (
         <div>
             <Typography paragraph>Öğrenciler Listesi:</Typography>
             <Table rows={rows} columns={columns}/>
-            <button
+            {userData.role === "admin" && <button
                 onClick={() => setIsAddStudent(!isAddStudent)}
                 className="submit__btn"
-                >Yeni Öğrenci Ekle</button>
+                >Yeni Öğrenci Ekle</button>}
         </div>
     );
 
-    const showAddTeacher = (
+    const showAddStudent = (
         <div className="dashboard__container">
             <form className="login__form" onSubmit={handleSubmit}>
                 <input
@@ -213,9 +213,7 @@ const Students = ({ userData, setUserData, token, setToken, allStudents, setAllS
         </div>
     )
 
-    return (
-        isAddStudent ? showAddTeacher : showTeachers
-    )
+    return userData.role === "admin" && isAddStudent ? showAddStudent : showStudents;
 }
 
 export default Students;

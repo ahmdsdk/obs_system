@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Public from './components/Public';
 import RequireAuth from './components/RequireAuth';
 import AdminDashboard from './components/AdminDashboard';
+import TeacherDashboard from './components/TeacherDashboard';
 import Dashboard from './components/Dashboard';
 import { apiCall } from './api';
 
@@ -75,6 +76,13 @@ function App() {
                                                     token={token}
                                                     setToken={setToken}
                                                     />}
+            />
+          <Route path="teacher_dashboard" element={<TeacherDashboard
+                                                      userData={userData}
+                                                      setUserData={setUserData}
+                                                      token={token}
+                                                      setToken={setToken}
+                                                      />}
             />
         </Route>
 

@@ -16,11 +16,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { styled, useTheme } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import TeacherIcon from './Icons/TeacherIcon';
-import StudentIcon from './Icons/StudentIcon';
-import LessonIcon from './Icons/LessonIcon';
-import LogOutIcon from './Icons/LogOutIcon';
-import HomeIcon from '@mui/icons-material/Home';
+import PanelIcon from './PanelIcon';
 
 const drawerWidth = 240;
 
@@ -171,7 +167,7 @@ export default function MiniDrawer({ userData, logOut, panelItems, setPanelItems
                     color: item.isHovered || item.isSelected ? '#196190' : 'grey',
                   }}
                 >
-                  {index === 0 ? <HomeIcon /> : index === 1 ? <TeacherIcon /> : index === 2 ? <StudentIcon /> : index === 3 ? <LessonIcon /> : <LogOutIcon /> }
+                  <PanelIcon index={index} item={item} />
                 </ListItemIcon>
                 <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>
@@ -182,7 +178,7 @@ export default function MiniDrawer({ userData, logOut, panelItems, setPanelItems
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-        {currentItem === 0 ? <Typography paragraph>Merhaba, {userData.fullName.charAt(0).toUpperCase() + userData.fullName.slice(1).split("@")[0]}!</Typography> : components[currentItem-1]}
+        {components[currentItem]}
       </Box>
     </Box>
   );

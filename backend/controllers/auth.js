@@ -362,6 +362,109 @@ module.exports = {
         });
 
     },
+    changePassword: async (req, res) => {
+        let { oldPassword, password, passwordAgain } = req.body;
+        const { user } = res.locals;
+        
+        oldPassword = oldPassword?.trim();
+        password = password?.trim();
+        passwordAgain = passwordAgain?.trim();
+
+        const userFound = await User.findOne({ username: user.username });
+
+        if (!userFound) {
+            res.locals = {
+                status: 401,
+                message: 'Kullanıcı bulunamadı.'
+            };
+            return module.exports.sendResponse(req, res);
+        }
+
+        const match = await bcrypt.compare(oldPassword, userFound.password);
+
+        if (!match) {
+            res.locals = {
+                status: 400,
+                message: 'Şifre yanlış.'
+            };
+            return module.exports.sendResponse(req, res);
+        }
+
+        if (checkWhiteSpace(password)) {
+            res.locals = {
+                status: 401,
+                message: "Parola boşluk içeremez."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+        if (password !== passwordAgain) {
+            res.locals = {
+                status: 401,
+                message: "Parolalar uyuşmuyor."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+        if (!checkMinLength(password, 8)) {
+            res.locals = {
+                status: 401,
+                message: "Şifre en az 8 harf olmalıdır."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+        if (!checkMaxLength(password, 42)) {
+            res.locals = {
+                status: 401,
+                message: "Şifre 42 harften kısa olmalıdır."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+
+        userFound.password = bcrypt.hashSync(password, 10);
+
+        const token = setToken(
+            {
+                email: userFound.email,
+                username: userFound.username,
+                _id: userFound._id
+            },
+            jwtSecret
+        );
+
+        const refreshToken = setRefreshToken(
+            {
+                email: userFound.email,
+                username: userFound.username,
+                _id: userFound._id
+            },
+            jwtRefreshSecret
+        );
+
+        userFound.refreshToken = encryptToken(refreshToken);
+
+        userFound.save().then(async u => {
+            const options = {
+                secure: process.env.NODE_ENV !== "development",
+                httpOnly: true,
+                expires: new Date(Date.now() + refreshExpiration)
+            };
+            
+            res.locals = {
+                status: 201,
+                user: await module.exports.getUserData(u),
+                token,
+                refreshToken,
+                options
+            };
+            return module.exports.sendResponse(req, res);
+        }).catch(err => {
+            console.log(err);
+            res.locals = {
+                status: 500,
+                message: err
+            };
+            return module.exports.sendResponse(req, res);
+        });
+    },
     login: async (req, res) => {
         let { username, password, authType } = req.body;
         username = username?.toLowerCase().trim();

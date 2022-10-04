@@ -8,15 +8,26 @@ const lessonSchema = new mongoose.Schema({
         lowercase: true,
         unique: true
     },
+    lessonCode: {
+        type: 'String',
+        required: true,
+        lowercase: true,
+        unique: true
+    },
     hasPrerequisite: {
         type: Boolean,
         default: false
     },
-    prerequisite: [{
+    prerequisiteId: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Lesson'
     }],
-    class: {
+    prerequisiteCode: [{
+        type: String,
+        ref: 'Lesson',
+        field: 'lessonCode'
+    }],
+    classNo: {
         type: Number,
         default: 1
     },
@@ -31,6 +42,11 @@ const lessonSchema = new mongoose.Schema({
     teacher: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Teacher'
+    },
+    status: {
+        type: String, 
+        enum: ['pending', 'active', 'inactive', 'canceled'],
+        default: 'active'
     },
     date: {
         type: Date,

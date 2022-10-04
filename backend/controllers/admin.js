@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const User = require('../models/User');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
+const Lesson = require('../models/Lesson');
 
 const jwtSecret = process.env.JWT_ACCESS_TOKEN;
 const tokenExpiration = parseInt(process.env.TOKEN_EXPIRATION);
@@ -52,6 +53,22 @@ module.exports = {
         };
         return module.exports.sendResponse(req, res);
     },
+    checkIfAdminOrTeacher: async (req, res, next) => {
+        const { user } = res.locals;
+
+        const admin = await User.findOne(user);
+
+        if (admin && (admin.role === 'admin' || admin.role === 'teacher')) {
+            res.locals.user = admin;
+            return next();
+        }
+
+        res.locals = {
+            status: 400,
+            message: 'Admin / öğretmen değilsiniz.'
+        };
+        return module.exports.sendResponse(req, res);
+    },
     sendResponse: async (req, res) => {
         const { status, user, data, token, refreshToken, options, message } = res.locals;
         
@@ -95,6 +112,22 @@ module.exports = {
             user: await module.exports.getUserData(user),
             token,
             data: users,
+            refreshToken,
+            options
+        };
+
+        return module.exports.sendResponse(req, res);
+    },
+    getLessons: async (req, res) => {
+        const { status, user, data, token, refreshToken, options, message } = res.locals;
+
+        const lessons = await Lesson.find();
+
+        res.locals = {
+            status,
+            user: await module.exports.getUserData(user),
+            token,
+            data: lessons,
             refreshToken,
             options
         };
@@ -374,6 +407,90 @@ module.exports = {
                 };
                 return module.exports.sendResponse(req, res);
             });
+        }).catch(err => {
+            console.log(err);
+            res.locals = {
+                status: 500,
+                message: err
+            };
+            return module.exports.sendResponse(req, res);
+        });
+    },
+    addLesson: async (req, res) => {
+        let { name, lessonCode, hasPrerequisite, prerequisiteCode, classNo, teacherID } = req.body;
+
+        name = name?.toLowerCase().trim();
+        lessonCode = lessonCode?.toLowerCase().trim();
+        classNo = classNo?.trim();
+        teacherID = teacherID?.toLowerCase().trim();
+
+        if (!name || !lessonCode || !classNo || !teacherID) {
+            res.locals = {
+                status: 401,
+                message: "Bütün alanları doldurun."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+
+        if (hasPrerequisite && !prerequisiteCode) {
+            res.locals = {
+                status: 401,
+                message: "Ders öncüllükleri eksik."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+
+        if (checkWhiteSpace(lessonCode) || checkWhiteSpace(teacherID) || checkWhiteSpace(classNo)) {
+            res.locals = {
+                status: 401,
+                message: "Veriler boşluk içeremez."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+
+        const foundTeacher = await Teacher.findOne({ _id: teacherID });
+
+        if (!foundTeacher) {
+            res.locals = {
+                status: 401,
+                message: "Öğretmen bulunamadı."
+            };
+            return module.exports.sendResponse(req, res);
+        }
+
+        const prerequisiteId = [];
+
+        let allLessons = await Lesson.find().exec();
+
+        if (hasPrerequisite) {
+            for (let i = 0; i < prerequisiteCode.length; i++) {
+                const code = prerequisiteCode[i].toString();
+                const foundPrerequisite = await Lesson.findOne({ lessonCode: code }).exec();
+
+                if (!foundPrerequisite) {
+                    res.locals = {
+                        status: 401,
+                        message: "Öncüllük ders bulunamadı."
+                    };
+                    return module.exports.sendResponse(req, res);
+                }
+
+                prerequisiteId.push(foundPrerequisite._id);
+            }
+        }
+
+        const newLesson = new Lesson({
+            _id: new mongoose.Types.ObjectId(),
+            name,
+            lessonCode,
+            hasPrerequisite,
+            prerequisiteCode,
+            prerequisiteId,
+            classNo,
+            teacher: teacherID,
+        }).save().then(lesson => {
+            res.locals.status = 201;
+            return module.exports.getLessons(req, res);
         }).catch(err => {
             console.log(err);
             res.locals = {
